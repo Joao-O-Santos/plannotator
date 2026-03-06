@@ -43,8 +43,9 @@ import {
   type DefaultNotesApp,
 } from '../utils/defaultNotesApp';
 import { useAgents } from '../hooks/useAgents';
+import { KeyboardShortcuts } from './KeyboardShortcuts';
 
-type SettingsTab = 'general' | 'display' | 'saving';
+type SettingsTab = 'general' | 'display' | 'saving' | 'shortcuts' | 'obsidian' | 'bear';
 
 interface SettingsProps {
   taterMode: boolean;
@@ -79,14 +80,19 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
   // Fetch available agents for OpenCode
   const { agents: availableAgents, validateAgent, getAgentWarning } = useAgents(origin ?? null);
 
-  const tabs = useMemo(() => {
+  const mainTabs = useMemo(() => {
     const t: { id: SettingsTab; label: string }[] = [{ id: 'general', label: 'General' }];
     if (mode === 'plan') {
       t.push({ id: 'display', label: 'Display' });
       t.push({ id: 'saving', label: 'Saving' });
     }
+    t.push({ id: 'shortcuts', label: 'Shortcuts' });
     return t;
   }, [mode]);
+
+  const integrationTabs: { id: SettingsTab; label: string }[] = mode === 'plan'
+    ? [{ id: 'obsidian', label: 'Obsidian' }, { id: 'bear', label: 'Bear' }]
+    : [];
 
   useEffect(() => {
     if (showDialog) {
@@ -209,10 +215,10 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
             </div>
 
             <div className="flex" style={{ minHeight: '420px' }}>
-              {/* Sidebar — only if multiple tabs */}
-              {tabs.length > 1 && (
-                <nav className="w-40 border-r border-border p-2 space-y-1 flex-shrink-0">
-                  {tabs.map(tab => (
+              {/* Sidebar */}
+              <nav className="w-40 border-r border-border p-2 flex-shrink-0">
+                <div className="space-y-0.5">
+                  {mainTabs.map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
@@ -225,8 +231,31 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
                       {tab.label}
                     </button>
                   ))}
-                </nav>
-              )}
+                </div>
+                {integrationTabs.length > 0 && (
+                  <>
+                    <div className="mx-2 my-2 border-t border-border/50" />
+                    <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                      Integrations
+                    </div>
+                    <div className="space-y-0.5">
+                      {integrationTabs.map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${
+                            activeTab === tab.id
+                              ? 'bg-primary/10 text-primary font-medium'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </nav>
 
               {/* Content — scrollable */}
               <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[70vh]">
@@ -550,33 +579,79 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
 
                     <div className="border-t border-border" />
 
-                    {/* Obsidian Integration */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-medium">Obsidian Integration</div>
-                          <div className="text-xs text-muted-foreground">
-                            Auto-save approved plans to your vault
-                          </div>
-                        </div>
-                        <button
-                          role="switch"
-                          aria-checked={obsidian.enabled}
-                          onClick={() => handleObsidianChange({ enabled: !obsidian.enabled })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            obsidian.enabled ? 'bg-primary' : 'bg-muted'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                              obsidian.enabled ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
+                    {/* Integration links */}
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                        Integrations
                       </div>
+                      <button
+                        onClick={() => setActiveTab('obsidian')}
+                        className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/50 hover:bg-muted rounded-lg text-sm transition-colors group"
+                      >
+                        <span className="text-foreground">Obsidian</span>
+                        <span className="flex items-center gap-2">
+                          <span className={`text-[10px] font-medium ${obsidian.enabled ? 'text-primary' : 'text-muted-foreground/50'}`}>
+                            {obsidian.enabled ? 'Enabled' : 'Off'}
+                          </span>
+                          <svg className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('bear')}
+                        className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/50 hover:bg-muted rounded-lg text-sm transition-colors group"
+                      >
+                        <span className="text-foreground">Bear Notes</span>
+                        <span className="flex items-center gap-2">
+                          <span className={`text-[10px] font-medium ${bear.enabled ? 'text-primary' : 'text-muted-foreground/50'}`}>
+                            {bear.enabled ? 'Enabled' : 'Off'}
+                          </span>
+                          <svg className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </button>
+                    </div>
+                  </>
+                )}
 
-                      {obsidian.enabled && (
-                        <div className="space-y-3 pl-0.5">
+                {/* === SHORTCUTS TAB === */}
+                {activeTab === 'shortcuts' && (
+                  <KeyboardShortcuts mode={mode} />
+                )}
+
+                {/* === OBSIDIAN TAB === */}
+                {activeTab === 'obsidian' && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">Obsidian Integration</div>
+                        <div className="text-xs text-muted-foreground">
+                          Auto-save approved plans to your vault
+                        </div>
+                      </div>
+                      <button
+                        role="switch"
+                        aria-checked={obsidian.enabled}
+                        onClick={() => handleObsidianChange({ enabled: !obsidian.enabled })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          obsidian.enabled ? 'bg-primary' : 'bg-muted'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                            obsidian.enabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {obsidian.enabled && (
+                      <>
+                        <div className="border-t border-border" />
+
+                        <div className="space-y-3">
                           <div className="flex gap-3">
                             <div className="flex-1 space-y-1.5">
                               <label className="text-xs text-muted-foreground">Vault</label>
@@ -679,58 +754,58 @@ tags: [plan, ...]
                             </pre>
                           </div>
 
-                          <div className="border-t border-border/30 pt-3">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="text-xs font-medium">Vault Browser</div>
-                                <div className="text-[10px] text-muted-foreground">
-                                  Browse and annotate vault files from the sidebar
-                                </div>
+                          <div className="border-t border-border/30" />
+
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xs font-medium">Vault Browser</div>
+                              <div className="text-[10px] text-muted-foreground">
+                                Browse and annotate vault files from the sidebar
                               </div>
-                              <button
-                                role="switch"
-                                aria-checked={obsidian.vaultBrowserEnabled}
-                                onClick={() => handleObsidianChange({ vaultBrowserEnabled: !obsidian.vaultBrowserEnabled })}
-                                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
-                                  obsidian.vaultBrowserEnabled ? 'bg-primary' : 'bg-muted'
-                                }`}
-                              >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                                  obsidian.vaultBrowserEnabled ? 'translate-x-6' : 'translate-x-1'
-                                }`} />
-                              </button>
                             </div>
+                            <button
+                              role="switch"
+                              aria-checked={obsidian.vaultBrowserEnabled}
+                              onClick={() => handleObsidianChange({ vaultBrowserEnabled: !obsidian.vaultBrowserEnabled })}
+                              className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
+                                obsidian.vaultBrowserEnabled ? 'bg-primary' : 'bg-muted'
+                              }`}
+                            >
+                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                                obsidian.vaultBrowserEnabled ? 'translate-x-6' : 'translate-x-1'
+                              }`} />
+                            </button>
                           </div>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="border-t border-border" />
-
-                    {/* Bear Integration */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-medium">Bear Notes</div>
-                        <div className="text-xs text-muted-foreground">
-                          Auto-save approved plans to Bear
-                        </div>
-                      </div>
-                      <button
-                        role="switch"
-                        aria-checked={bear.enabled}
-                        onClick={() => handleBearChange(!bear.enabled)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          bear.enabled ? 'bg-primary' : 'bg-muted'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                            bear.enabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
+                      </>
+                    )}
                   </>
+                )}
+
+                {/* === BEAR TAB === */}
+                {activeTab === 'bear' && (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium">Bear Notes</div>
+                      <div className="text-xs text-muted-foreground">
+                        Auto-save approved plans to Bear
+                      </div>
+                    </div>
+                    <button
+                      role="switch"
+                      aria-checked={bear.enabled}
+                      onClick={() => handleBearChange(!bear.enabled)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        bear.enabled ? 'bg-primary' : 'bg-muted'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                          bear.enabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
                 )}
 
               </div>
