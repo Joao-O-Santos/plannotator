@@ -78,12 +78,17 @@ const gitProvider: VcsProvider = {
   id: "git",
 
   async detect(cwd?: string): Promise<boolean> {
-    const proc = Bun.spawn(["git", "rev-parse", "--is-inside-work-tree"], {
-      cwd: cwd ?? undefined,
-      stdout: "ignore",
-      stderr: "ignore",
-    });
-    return (await proc.exited) === 0;
+    try {
+      const proc = Bun.spawn(["git", "rev-parse", "--is-inside-work-tree"], {
+        cwd: cwd ?? undefined,
+        stdout: "ignore",
+        stderr: "ignore",
+      });
+      return (await proc.exited) === 0;
+    } catch {
+      // git not installed or not in PATH
+      return false;
+    }
   },
 
   ownsDiffType(diffType: string): boolean {

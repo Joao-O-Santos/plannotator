@@ -20,19 +20,24 @@ async function runP4(
   args: string[],
   options?: { cwd?: string },
 ): Promise<GitCommandResult> {
-  const proc = Bun.spawn(["p4", ...args], {
-    cwd: options?.cwd,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
+  try {
+    const proc = Bun.spawn(["p4", ...args], {
+      cwd: options?.cwd,
+      stdout: "pipe",
+      stderr: "pipe",
+    });
 
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-    proc.exited,
-  ]);
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
 
-  return { stdout: stdout.replace(/\r\n/g, "\n"), stderr, exitCode };
+    return { stdout: stdout.replace(/\r\n/g, "\n"), stderr, exitCode };
+  } catch {
+    // p4 not installed or not in PATH — treat as command failure
+    return { stdout: "", stderr: "p4 not found", exitCode: 1 };
+  }
 }
 
 // --- Path helpers ---
