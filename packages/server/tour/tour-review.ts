@@ -1,8 +1,9 @@
 import { join } from "node:path";
-import { homedir, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import { mkdir, writeFile, readFile, unlink } from "node:fs/promises";
 import type { DiffType } from "../vcs";
 import type { PRMetadata } from "../pr";
+import { getCacheDir } from "@plannotator/shared/paths";
 import type {
   CodeTourOutput,
   TourDiffAnchor,
@@ -385,7 +386,7 @@ export function buildTourClaudeCommand(prompt: string, model: string = "sonnet",
   };
 }
 
-const TOUR_SCHEMA_DIR = join(homedir(), ".plannotator");
+const TOUR_SCHEMA_DIR = getCacheDir();
 const TOUR_SCHEMA_FILE = join(TOUR_SCHEMA_DIR, "tour-schema.json");
 let tourSchemaMaterialized = false;
 

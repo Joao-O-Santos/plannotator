@@ -1,11 +1,10 @@
 /**
  * Session Registry
  *
- * Tracks active Plannotator server sessions in ~/.plannotator/sessions/
+ * Tracks active Plannotator server sessions in ~/.cache/plannotator/sessions/
  * so users can discover and reopen closed browser tabs.
  */
 
-import { homedir } from "os";
 import { join } from "path";
 import {
   mkdirSync,
@@ -15,6 +14,7 @@ import {
   unlinkSync,
   existsSync,
 } from "fs";
+import { getCacheDir } from "@plannotator/shared/paths";
 
 export interface SessionInfo {
   pid: number;
@@ -27,7 +27,7 @@ export interface SessionInfo {
 }
 
 function getSessionsDir(): string {
-  const dir = join(homedir(), ".plannotator", "sessions");
+  const dir = join(getCacheDir(), "sessions");
   mkdirSync(dir, { recursive: true });
   return dir;
 }

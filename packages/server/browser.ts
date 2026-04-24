@@ -3,11 +3,11 @@
  */
 
 import { $ } from "bun";
-import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
+import { getCacheDir } from "@plannotator/shared/paths";
 
-const IPC_REGISTRY = path.join(os.homedir(), ".plannotator", "vscode-ipc.json");
+const IPC_REGISTRY = path.join(getCacheDir(), "vscode-ipc.json");
 
 /**
  * Try opening URL via VS Code extension IPC registry.
@@ -46,6 +46,7 @@ export async function isWSL(): Promise<boolean> {
     return false;
   }
 
+  const os = await import("node:os");
   if (os.release().toLowerCase().includes("microsoft")) {
     return true;
   }
