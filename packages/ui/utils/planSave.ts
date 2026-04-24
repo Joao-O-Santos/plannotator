@@ -20,7 +20,7 @@ export interface PlanSaveSettings {
 
 const DEFAULT_SETTINGS: PlanSaveSettings = {
   enabled: true,
-  customPath: null, // null means use default ~/.config/plannotator/data/plans/
+  customPath: null, // null means use default ~/.plannotator/plans/
 };
 
 /**

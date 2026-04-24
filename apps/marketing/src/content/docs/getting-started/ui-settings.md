@@ -81,7 +81,7 @@ Enables animated Tater sprite characters that run across the screen. Off by defa
 
 ### Save plans
 
-Auto-save approved and denied plans to disk. Enabled by default. Plans are saved to `~/.config/plannotator/data/plans/` unless you specify a custom path.
+Auto-save approved and denied plans to disk. Enabled by default. Plans are saved to `~/.plannotator/plans/` unless you specify a custom path.
 
 When enabled, an optional **Custom Path** input lets you override the default directory. Leave it empty to use the default location.
 

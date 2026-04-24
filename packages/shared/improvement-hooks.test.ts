@@ -14,7 +14,7 @@ import { tmpdir, homedir } from "os";
 // a test harness that sets HOME to a temp directory.
 
 const TEST_HOME = join(tmpdir(), `improvement-hooks-test-${Date.now()}`);
-const NEW_BASE = join(TEST_HOME, ".config", "plannotator", "data", "hooks");
+const NEW_BASE = join(TEST_HOME, "xdg-data", "plannotator", "hooks");
 const LEGACY_BASE = join(TEST_HOME, ".plannotator");
 const HOOK_RELATIVE = "compound/enterplanmode-improve-hook.txt";
 
@@ -60,7 +60,7 @@ async function runScenario(setup: {
     `,
     ],
     {
-      env: { ...process.env, HOME: TEST_HOME },
+      env: { ...process.env, HOME: TEST_HOME, XDG_DATA_HOME: join(TEST_HOME, "xdg-data") },
       cwd: join(import.meta.dir, "../.."),
       stdout: "pipe",
       stderr: "pipe",
@@ -89,7 +89,7 @@ describe("readImprovementHook", () => {
     });
     expect(result).not.toBeNull();
     expect(result!.content).toBe("Focus on error handling");
-    expect(result!.filePath).toContain(".config/plannotator/data/hooks/compound/");
+    expect(result!.filePath).toContain("xdg-data/plannotator/hooks/compound/");
   });
 
   test("new path wins over legacy path", async () => {
@@ -99,7 +99,7 @@ describe("readImprovementHook", () => {
     });
     expect(result).not.toBeNull();
     expect(result!.content).toBe("New instructions");
-    expect(result!.filePath).toContain(".config/plannotator/data/hooks/compound/");
+    expect(result!.filePath).toContain("xdg-data/plannotator/hooks/compound/");
   });
 
   test("falls back to legacy path when new path is absent", async () => {
@@ -109,7 +109,7 @@ describe("readImprovementHook", () => {
     expect(result).not.toBeNull();
     expect(result!.content).toBe("Legacy instructions");
     expect(result!.filePath).toContain(".plannotator/compound/");
-    expect(result!.filePath).not.toContain(".config/plannotator/data/hooks/");
+    expect(result!.filePath).not.toContain("xdg-data/plannotator/hooks/");
   });
 
   test("returns null when new path exists but is empty (no legacy fallback)", async () => {

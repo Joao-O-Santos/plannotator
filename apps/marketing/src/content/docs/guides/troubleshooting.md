@@ -36,15 +36,17 @@ Stale sessions from crashed processes are cleaned up automatically. You can also
 
 ## Where does Plannotator store data?
 
-Plannotator follows the XDG Base Directory Specification:
+All local data lives under `~/.plannotator/` by default. When `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, or `XDG_CACHE_HOME` are set, Plannotator respects those locations instead.
 
-| Directory | Path | What's in it |
-|-----------|------|-------------|
-| **Config** | `~/.config/plannotator/` | `config.json` — user settings (diff options, labels, Jina toggle, attestation flag). |
-| **Data** | `~/.config/plannotator/data/` | `plans/` — snapshots of approved and denied plans. `history/` — automatic version history for every plan. `hooks/` — improvement hook files. |
-| **Cache** | `~/.cache/plannotator/` | `drafts/` — auto-saved annotation drafts. `sessions/` — temporary session files for active servers. `pastes/` — paste service storage. |
+| Directory | Default | XDG override | What's in it |
+|-----------|---------|--------------|-------------|
+| **Config** | `~/.plannotator/` | `$XDG_CONFIG_HOME/plannotator/` | `config.json` — user settings. |
+| **Data** | `~/.plannotator/` | `$XDG_DATA_HOME/plannotator/` | `plans/`, `history/`, `hooks/` |
+| **Cache** | `~/.plannotator/` | `$XDG_CACHE_HOME/plannotator/` | `drafts/`, `sessions/`, `pastes/` |
 
-Legacy data in `~/.plannotator/` is still read for backward compatibility but new data is always written to the paths above.
+You can also override any path via `PLANNOTATOR_CONFIG_DIR`, `PLANNOTATOR_DATA_DIR`, or `PLANNOTATOR_CACHE_DIR`.
+
+Legacy data in `~/.plannotator/` is still readable for backward compatibility but new data is written to the resolved path.
 
 Plan saving is enabled by default. You can change the save directory or disable it entirely in the Plannotator UI settings (gear icon).
 

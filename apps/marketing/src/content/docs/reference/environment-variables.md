@@ -19,15 +19,15 @@ All Plannotator environment variables and their defaults.
 | `PLANNOTATOR_SHARE` | enabled | Set to `disabled` to turn off sharing. Hides share UI and import options. |
 | `PLANNOTATOR_SHARE_URL` | `https://share.plannotator.ai` | Base URL for share links. Set this when self-hosting the share portal. |
 | `PLANNOTATOR_PLAN_TIMEOUT_SECONDS` | `345600` | OpenCode only. `submit_plan` wait timeout in seconds. Set `0` to disable timeout. |
-| `PLANNOTATOR_CONFIG_DIR` | `~/.config/plannotator` | Override the config directory. Falls back to `XDG_CONFIG_HOME/plannotator` if unset. |
-| `PLANNOTATOR_DATA_DIR` | `~/.config/plannotator/data` | Override the data directory (plans, history, hooks). Falls back to `<config-dir>/data` if unset. |
-| `PLANNOTATOR_CACHE_DIR` | `~/.cache/plannotator` | Override the cache directory (drafts, sessions, pastes, logs). Falls back to `XDG_CACHE_HOME/plannotator` if unset. |
+| `PLANNOTATOR_CONFIG_DIR` | `~/.plannotator` | Override the config directory. Falls back to `XDG_CONFIG_HOME/plannotator` when `XDG_CONFIG_HOME` is set. |
+| `PLANNOTATOR_DATA_DIR` | `~/.plannotator` | Override the data directory (plans, history, hooks). Falls back to `XDG_DATA_HOME/plannotator` when `XDG_DATA_HOME` is set. |
+| `PLANNOTATOR_CACHE_DIR` | `~/.plannotator` | Override the cache directory (drafts, sessions, pastes, logs). Falls back to `XDG_CACHE_HOME/plannotator` when `XDG_CACHE_HOME` is set. |
 
 ## Annotation variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PLANNOTATOR_JINA` | enabled | Set to `0` or `false` to disable Jina Reader for URL annotation. Set to `1` or `true` to enable (this is the default). Can also be set via `~/.config/plannotator/config.json` (`{ "jina": false }`) or per-invocation via `--no-jina`. |
+| `PLANNOTATOR_JINA` | enabled | Set to `0` or `false` to disable Jina Reader for URL annotation. Set to `1` or `true` to enable (this is the default). Can also be set via `~/.plannotator/config.json` (`{ "jina": false }`) or per-invocation via `--no-jina`. |
 | `JINA_API_KEY` | (none) | Optional Jina Reader API key for higher rate limits. Without it: 20 req/min. With it: 500 req/min. Free keys available from [Jina](https://jina.ai/reader/) and include 10M tokens. |
 
 ## Paste service variables
@@ -43,7 +43,7 @@ When running your own paste service binary, these variables configure it:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PASTE_PORT` | `19433` | Server port |
-| `PASTE_DATA_DIR` | `~/.cache/plannotator/pastes` | Filesystem storage directory |
+| `PASTE_DATA_DIR` | `~/.plannotator/pastes` | Filesystem storage directory |
 | `PASTE_TTL_DAYS` | `7` | Paste expiration in days |
 | `PASTE_MAX_SIZE` | `524288` | Max payload size in bytes (512KB) |
 | `PASTE_ALLOWED_ORIGINS` | `https://share.plannotator.ai,http://localhost:3001` | CORS allowed origins (comma-separated) |

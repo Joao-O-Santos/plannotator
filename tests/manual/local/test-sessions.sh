@@ -21,7 +21,7 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-SESSIONS_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/plannotator/sessions"
+SESSIONS_DIR="$HOME/.plannotator/sessions"
 PASS=0
 FAIL=0
 BG_PIDS=""

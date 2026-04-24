@@ -250,7 +250,7 @@ At the end, output an overall correctness verdict.
 
 ```bash
 codex exec \
-  --output-schema ~/.cache/plannotator/codex-review-schema.json \
+  --output-schema ~/.plannotator/codex-review-schema.json \
   -o /tmp/plannotator-codex-<uuid>.json \
   --full-auto \
   --ephemeral \

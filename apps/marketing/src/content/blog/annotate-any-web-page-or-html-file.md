@@ -43,7 +43,7 @@ Three ways to configure Jina behavior:
 
 - **CLI flag**: `plannotator annotate https://... --no-jina`
 - **Environment variable**: `PLANNOTATOR_JINA=0`
-- **Config file**: `~/.config/plannotator/config.json` with `{ "jina": false }`
+- **Config file**: `~/.plannotator/config.json` with `{ "jina": false }`
 
 For higher rate limits (500 RPM instead of 20 RPM), set a `JINA_API_KEY`. Free keys are available from Jina and include 10M tokens.
 
