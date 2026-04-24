@@ -4,9 +4,16 @@ import { handleRequest } from "../core/handler";
 import { corsHeaders, getAllowedOrigins } from "../core/cors";
 import { FsPasteStore } from "../stores/fs";
 
+function getCacheDir(): string {
+  const dir =
+    process.env.PLANNOTATOR_CACHE_DIR ||
+    (process.env.XDG_CACHE_HOME && join(process.env.XDG_CACHE_HOME, "plannotator")) ||
+    join(homedir(), ".cache", "plannotator");
+  return dir;
+}
+
 const port = parseInt(process.env.PASTE_PORT || "19433", 10);
-const dataDir =
-  process.env.PASTE_DATA_DIR || join(homedir(), ".plannotator", "pastes");
+const dataDir = process.env.PASTE_DATA_DIR || join(getCacheDir(), "pastes");
 const ttlDays = parseInt(process.env.PASTE_TTL_DAYS || "7", 10);
 const ttlSeconds = ttlDays * 24 * 60 * 60;
 const maxSize = parseInt(process.env.PASTE_MAX_SIZE || "524288", 10);
