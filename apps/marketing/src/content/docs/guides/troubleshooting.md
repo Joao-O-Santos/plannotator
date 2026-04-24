@@ -36,14 +36,15 @@ Stale sessions from crashed processes are cleaned up automatically. You can also
 
 ## Where does Plannotator store data?
 
-All local data lives under `~/.plannotator/`:
+Plannotator follows the XDG Base Directory Specification:
 
-| Directory | What's in it |
-|-----------|-------------|
-| `plans/` | Snapshots of approved and denied plans. Controlled by the "Save plans" toggle in Settings. |
-| `history/` | Automatic version history for every plan, organized by project and heading. Powers the plan diff and version browser. |
-| `drafts/` | Auto-saved annotation drafts. If a server crashes mid-review, your in-progress annotations are recovered on the next session. |
-| `sessions/` | Temporary session files for active servers. Cleaned up automatically when a server exits. |
+| Directory | Path | What's in it |
+|-----------|------|-------------|
+| **Config** | `~/.config/plannotator/` | `config.json` — user settings (diff options, labels, Jina toggle, attestation flag). |
+| **Data** | `~/.config/plannotator/data/` | `plans/` — snapshots of approved and denied plans. `history/` — automatic version history for every plan. `hooks/` — improvement hook files. |
+| **Cache** | `~/.cache/plannotator/` | `drafts/` — auto-saved annotation drafts. `sessions/` — temporary session files for active servers. `pastes/` — paste service storage. |
+
+Legacy data in `~/.plannotator/` is still read for backward compatibility but new data is always written to the paths above.
 
 Plan saving is enabled by default. You can change the save directory or disable it entirely in the Plannotator UI settings (gear icon).
 

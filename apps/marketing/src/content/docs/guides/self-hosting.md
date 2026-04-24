@@ -87,14 +87,14 @@ chmod +x plannotator-paste-*
 ./plannotator-paste-darwin-arm64   # or whichever matches your platform
 ```
 
-Pastes stored to `~/.plannotator/pastes/` by default.
+Pastes stored to `~/.cache/plannotator/pastes/` by default.
 
 ### Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PASTE_PORT` | `19433` | Server port |
-| `PASTE_DATA_DIR` | `~/.plannotator/pastes` | Storage directory |
+| `PASTE_DATA_DIR` | `~/.cache/plannotator/pastes` | Storage directory |
 | `PASTE_TTL_DAYS` | `7` | Auto-delete after N days |
 | `PASTE_MAX_SIZE` | `524288` | Max payload size (512KB) |
 | `PASTE_ALLOWED_ORIGINS` | (see defaults) | CORS allowed origins |

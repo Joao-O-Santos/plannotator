@@ -79,7 +79,7 @@ If you are upgrading from an older OpenCode install, see the [OpenCode 0.19.1 mi
 
 ## Plan saving
 
-Approved and denied plans are saved to `~/.plannotator/plans/` by default. You can change the save directory or disable saving in the Plannotator UI settings (gear icon).
+Approved and denied plans are saved to `~/.config/plannotator/data/plans/` by default. You can change the save directory or disable saving in the Plannotator UI settings (gear icon).
 
 ## Remote mode
 

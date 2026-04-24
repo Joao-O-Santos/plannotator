@@ -76,7 +76,7 @@ Three ways to disable Jina Reader, in priority order:
 
 1. **CLI flag:** `--no-jina`
 2. **Environment variable:** `PLANNOTATOR_JINA=0` or `PLANNOTATOR_JINA=false`
-3. **Config file:** `~/.plannotator/config.json` with `{ "jina": false }`
+3. **Config file:** `~/.config/plannotator/config.json` with `{ "jina": false }`
 
 If none of these are set, Jina is enabled by default.
 

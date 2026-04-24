@@ -62,8 +62,8 @@ export PLANNOTATOR_VERIFY_ATTESTATION=1
 **3. Config file** (persist shell-agnostic):
 
 ```bash
-mkdir -p ~/.plannotator
-echo '{ "verifyAttestation": true }' > ~/.plannotator/config.json
+mkdir -p ~/.config/plannotator
+echo '{ "verifyAttestation": true }' > ~/.config/plannotator/config.json
 ```
 
 When enabled, the installer requires `gh` CLI installed and authenticated (`gh auth login`). If `gh` is missing or the check fails, the install hard-fails so you don't silently skip verification. To force-skip for a single install, pass `--skip-attestation` (bash/cmd) or `-SkipAttestation` (PowerShell).
