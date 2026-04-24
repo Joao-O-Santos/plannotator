@@ -1,7 +1,7 @@
 /**
  * Improvement Hook Reader
  *
- * Reads improvement hook files from ~/.plannotator/hooks/.
+ * Reads improvement hook files from ~/.config/plannotator/data/hooks/.
  * Falls back to the legacy path (~/.plannotator/) when the new-path
  * file is absent, for compatibility with files written before the
  * path migration. If the new-path file exists but is invalid (empty,
@@ -14,25 +14,25 @@
  * - Hardcoded base paths (no user input determines file path)
  * - KNOWN_HOOKS allowlist (only pre-registered relative paths)
  * - Size cap to prevent runaway context injection
- * - Same trust model as ~/.plannotator/config.json
+ * - Same trust model as ~/.config/plannotator/config.json
  */
 
-import { homedir } from "os";
 import { join } from "path";
 import { readFileSync, statSync } from "fs";
+import { getDataDir, getLegacyDir } from "./paths";
 
 /** Base directory for hook-injectable files (new path) */
-const HOOKS_BASE_DIR = join(homedir(), ".plannotator", "hooks");
+const HOOKS_BASE_DIR = join(getDataDir(), "hooks");
 
 /** Legacy base directory (pre-migration path) */
-const LEGACY_BASE_DIR = join(homedir(), ".plannotator");
+const LEGACY_BASE_DIR = getLegacyDir();
 
 /** Maximum file size to read (50 KB) */
 const MAX_FILE_SIZE = 50 * 1024;
 
 /**
  * Known improvement hook file paths, keyed by hook name.
- * `path` is relative to HOOKS_BASE_DIR (~/.plannotator/hooks/).
+ * `path` is relative to HOOKS_BASE_DIR (~/.config/plannotator/data/hooks/).
  * `legacyPath` is relative to LEGACY_BASE_DIR (~/.plannotator/).
  */
 const KNOWN_HOOKS = {

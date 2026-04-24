@@ -1,14 +1,14 @@
 /**
  * Plannotator Config
  *
- * Reads/writes ~/.plannotator/config.json for persistent user settings.
+ * Reads/writes ~/.config/plannotator/config.json for persistent user settings.
  * Runtime-agnostic: uses only node:fs, node:os, node:child_process.
  */
 
-import { homedir } from "os";
 import { join } from "path";
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { execSync } from "child_process";
+import { getConfigDir, getLegacyDir } from "./paths";
 
 export type DefaultDiffType = 'uncommitted' | 'unstaged' | 'staged';
 
@@ -54,17 +54,32 @@ export interface PlannotatorConfig {
   jina?: boolean;
 }
 
-const CONFIG_DIR = join(homedir(), ".plannotator");
-const CONFIG_PATH = join(CONFIG_DIR, "config.json");
+function getConfigPath(): string {
+  return join(getConfigDir(), "config.json");
+}
+
+function getLegacyConfigPath(): string {
+  return join(getLegacyDir(), "config.json");
+}
 
 /**
- * Load config from ~/.plannotator/config.json.
+ * Load config from ~/.config/plannotator/config.json.
+ * Falls back to legacy ~/.plannotator/config.json if the new path does not exist.
  * Returns {} on missing file or malformed JSON.
  */
 export function loadConfig(): PlannotatorConfig {
   try {
-    if (!existsSync(CONFIG_PATH)) return {};
-    const raw = readFileSync(CONFIG_PATH, "utf-8");
+    const newPath = getConfigPath();
+    const legacyPath = getLegacyConfigPath();
+
+    let raw: string | undefined;
+    if (existsSync(newPath)) {
+      raw = readFileSync(newPath, "utf-8");
+    } else if (existsSync(legacyPath)) {
+      raw = readFileSync(legacyPath, "utf-8");
+    }
+
+    if (raw === undefined) return {};
     const parsed = JSON.parse(raw);
     return typeof parsed === "object" && parsed !== null ? parsed : {};
   } catch (e) {
@@ -75,7 +90,7 @@ export function loadConfig(): PlannotatorConfig {
 
 /**
  * Save config by merging partial values into the existing file.
- * Creates ~/.plannotator/ directory if needed.
+ * Creates ~/.config/plannotator/ directory if needed.
  */
 export function saveConfig(partial: Partial<PlannotatorConfig>): void {
   try {
@@ -84,8 +99,7 @@ export function saveConfig(partial: Partial<PlannotatorConfig>): void {
       ? { ...current.diffOptions, ...partial.diffOptions }
       : undefined;
     const merged = { ...current, ...partial, diffOptions: mergedDiffOptions };
-    mkdirSync(CONFIG_DIR, { recursive: true });
-    writeFileSync(CONFIG_PATH, JSON.stringify(merged, null, 2) + "\n", "utf-8");
+    writeFileSync(getConfigPath(), JSON.stringify(merged, null, 2) + "\n", "utf-8");
   } catch (e) {
     process.stderr.write(`[plannotator] Warning: failed to write config.json: ${e}\n`);
   }

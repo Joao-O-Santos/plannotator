@@ -1,23 +1,23 @@
 /**
  * Draft Storage
  *
- * Persists annotation drafts to ~/.plannotator/drafts/ so they survive
+ * Persists annotation drafts to ~/.cache/plannotator/drafts/ so they survive
  * server crashes. Each draft is keyed by a content hash of the plan/diff
  * it was created against.
  *
  * Runtime-agnostic: uses only node:fs, node:path, node:os, node:crypto.
  */
 
-import { homedir } from "os";
 import { join } from "path";
 import { mkdirSync, writeFileSync, readFileSync, unlinkSync, existsSync } from "fs";
 import { createHash } from "crypto";
+import { getCacheDir } from "./paths";
 
 /**
  * Get the drafts directory, creating it if needed.
  */
 export function getDraftDir(): string {
-  const dir = join(homedir(), ".plannotator", "drafts");
+  const dir = join(getCacheDir(), "drafts");
   mkdirSync(dir, { recursive: true });
   return dir;
 }

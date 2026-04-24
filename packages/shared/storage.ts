@@ -1,17 +1,17 @@
 /**
  * Plan Storage Utility
  *
- * Saves plans and annotations to ~/.plannotator/plans/
+ * Saves plans and annotations to ~/.config/plannotator/data/plans/
  * Cross-platform: works on Windows, macOS, and Linux.
  *
  * Runtime-agnostic: uses only node:fs, node:path, node:os.
  */
 
-import { homedir } from "os";
 import { join, resolve, sep } from "path";
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, existsSync } from "fs";
 import { sanitizeTag } from "./project";
 import { resolveUserPath } from "./resolve-file";
+import { getDataDir, getLegacyDir } from "./paths";
 
 /**
  * Get the plan storage directory, creating it if needed.
@@ -24,7 +24,7 @@ export function getPlanDir(customPath?: string | null): string {
   if (customPath?.trim()) {
     planDir = resolveUserPath(customPath);
   } else {
-    planDir = join(homedir(), ".plannotator", "plans");
+    planDir = join(getDataDir(), "plans");
   }
 
   mkdirSync(planDir, { recursive: true });
@@ -149,12 +149,7 @@ export function parseArchiveFilename(filename: string): ArchivedPlan | null {
   return { filename, title, date, timestamp: "", status, size: 0 };
 }
 
-/**
- * List all archived plans (approved/denied decision snapshots).
- * Returns plans sorted by date descending.
- */
-export function listArchivedPlans(customPath?: string | null): ArchivedPlan[] {
-  const planDir = getPlanDir(customPath);
+function readArchiveDir(planDir: string): ArchivedPlan[] {
   try {
     const entries = readdirSync(planDir);
     const plans: ArchivedPlan[] = [];
@@ -169,37 +164,73 @@ export function listArchivedPlans(customPath?: string | null): ArchivedPlan[] {
       } catch { /* keep defaults */ }
       plans.push(parsed);
     }
-    return plans.sort((a, b) => b.date.localeCompare(a.date) || b.timestamp.localeCompare(a.timestamp));
+    return plans;
   } catch {
     return [];
   }
 }
 
 /**
+ * List all archived plans (approved/denied decision snapshots).
+ * Merges results from new data path and legacy path so existing plans remain visible.
+ * Returns plans sorted by date descending.
+ */
+export function listArchivedPlans(customPath?: string | null): ArchivedPlan[] {
+  const planDir = getPlanDir(customPath);
+  const legacyDir = customPath?.trim()
+    ? null
+    : join(getLegacyDir(), "plans");
+
+  const plans = readArchiveDir(planDir);
+  const legacyPlans = legacyDir ? readArchiveDir(legacyDir) : [];
+
+  // Deduplicate by filename
+  const seen = new Set(plans.map((p) => p.filename));
+  for (const p of legacyPlans) {
+    if (!seen.has(p.filename)) plans.push(p);
+  }
+
+  return plans.sort((a, b) => b.date.localeCompare(a.date) || b.timestamp.localeCompare(a.timestamp));
+}
+
+/**
  * Read an archived plan file by filename.
+ * Tries new path first, falls back to legacy path.
  * Returns null if the file doesn't exist or on read error.
  */
 export function readArchivedPlan(filename: string, customPath?: string | null): string | null {
   const planDir = getPlanDir(customPath);
   const filePath = resolve(planDir, filename);
   // Guard against path traversal (resolve + trailing separator, matching reference-handlers.ts)
-  if (!filePath.startsWith(planDir + sep)) return null;
-  try {
-    return readFileSync(filePath, "utf-8");
-  } catch {
-    return null;
+  if (filePath.startsWith(planDir + sep)) {
+    try {
+      return readFileSync(filePath, "utf-8");
+    } catch { /* fall through */ }
   }
+
+  // Fallback to legacy path
+  if (!customPath?.trim()) {
+    const legacyDir = join(getLegacyDir(), "plans");
+    const legacyPath = resolve(legacyDir, filename);
+    if (legacyPath.startsWith(legacyDir + sep)) {
+      try {
+        return readFileSync(legacyPath, "utf-8");
+      } catch { /* fall through */ }
+    }
+  }
+
+  return null;
 }
 
 // --- Version History ---
 
 /**
  * Get the history directory for a project/slug combination, creating it if needed.
- * History is always stored in ~/.plannotator/history/{project}/{slug}/.
+ * History is stored in ~/.config/plannotator/data/history/{project}/{slug}/.
  * Not affected by the customPath setting (that only affects decision saves).
  */
 export function getHistoryDir(project: string, slug: string): string {
-  const historyDir = join(homedir(), ".plannotator", "history", project, slug);
+  const historyDir = join(getDataDir(), "history", project, slug);
   mkdirSync(historyDir, { recursive: true });
   return historyDir;
 }
@@ -266,7 +297,7 @@ export function getPlanVersion(
   slug: string,
   version: number
 ): string | null {
-  const historyDir = join(homedir(), ".plannotator", "history", project, slug);
+  const historyDir = join(getDataDir(), "history", project, slug);
   const fileName = `${String(version).padStart(3, "0")}.md`;
   const filePath = join(historyDir, fileName);
 
@@ -286,7 +317,7 @@ export function getPlanVersionPath(
   slug: string,
   version: number
 ): string | null {
-  const historyDir = join(homedir(), ".plannotator", "history", project, slug);
+  const historyDir = join(getDataDir(), "history", project, slug);
   const fileName = `${String(version).padStart(3, "0")}.md`;
   const filePath = join(historyDir, fileName);
   return existsSync(filePath) ? filePath : null;
@@ -297,7 +328,7 @@ export function getPlanVersionPath(
  * Returns 0 if the directory doesn't exist.
  */
 export function getVersionCount(project: string, slug: string): number {
-  const historyDir = join(homedir(), ".plannotator", "history", project, slug);
+  const historyDir = join(getDataDir(), "history", project, slug);
   try {
     const entries = readdirSync(historyDir);
     return entries.filter((e) => /^\d+\.md$/.test(e)).length;
@@ -314,7 +345,7 @@ export function listVersions(
   project: string,
   slug: string
 ): Array<{ version: number; timestamp: string }> {
-  const historyDir = join(homedir(), ".plannotator", "history", project, slug);
+  const historyDir = join(getDataDir(), "history", project, slug);
   try {
     const entries = readdirSync(historyDir);
     const versions: Array<{ version: number; timestamp: string }> = [];
@@ -344,7 +375,7 @@ export function listVersions(
 export function listProjectPlans(
   project: string
 ): Array<{ slug: string; versions: number; lastModified: string }> {
-  const projectDir = join(homedir(), ".plannotator", "history", project);
+  const projectDir = join(getDataDir(), "history", project);
   try {
     const entries = readdirSync(projectDir, { withFileTypes: true });
     const plans: Array<{ slug: string; versions: number; lastModified: string }> = [];
