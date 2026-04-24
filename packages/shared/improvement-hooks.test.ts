@@ -7,14 +7,14 @@
 import { describe, expect, test, beforeEach, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
+import { tmpdir, homedir } from "os";
 
 // We need to override the base dirs used by readImprovementHook.
 // Since the module uses homedir() at import time, we mock it via
 // a test harness that sets HOME to a temp directory.
 
 const TEST_HOME = join(tmpdir(), `improvement-hooks-test-${Date.now()}`);
-const NEW_BASE = join(TEST_HOME, ".plannotator", "hooks");
+const NEW_BASE = join(TEST_HOME, ".config", "plannotator", "data", "hooks");
 const LEGACY_BASE = join(TEST_HOME, ".plannotator");
 const HOOK_RELATIVE = "compound/enterplanmode-improve-hook.txt";
 
@@ -89,7 +89,7 @@ describe("readImprovementHook", () => {
     });
     expect(result).not.toBeNull();
     expect(result!.content).toBe("Focus on error handling");
-    expect(result!.filePath).toContain(".plannotator/hooks/compound/");
+    expect(result!.filePath).toContain(".config/plannotator/data/hooks/compound/");
   });
 
   test("new path wins over legacy path", async () => {
@@ -99,7 +99,7 @@ describe("readImprovementHook", () => {
     });
     expect(result).not.toBeNull();
     expect(result!.content).toBe("New instructions");
-    expect(result!.filePath).toContain(".plannotator/hooks/compound/");
+    expect(result!.filePath).toContain(".config/plannotator/data/hooks/compound/");
   });
 
   test("falls back to legacy path when new path is absent", async () => {
@@ -109,7 +109,7 @@ describe("readImprovementHook", () => {
     expect(result).not.toBeNull();
     expect(result!.content).toBe("Legacy instructions");
     expect(result!.filePath).toContain(".plannotator/compound/");
-    expect(result!.filePath).not.toContain(".plannotator/hooks/");
+    expect(result!.filePath).not.toContain(".config/plannotator/data/hooks/");
   });
 
   test("returns null when new path exists but is empty (no legacy fallback)", async () => {
