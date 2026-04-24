@@ -211,7 +211,7 @@ describe("install.cmd", () => {
     // Layer 3: config file read (verifyAttestation appears inside a
     // findstr pattern with escaped quotes; assert the key + findstr
     // separately rather than the quoted form)
-    expect(script).toContain("%USERPROFILE%\\.plannotator\\config.json");
+    expect(script).toContain("CONFIG_PATH");
     expect(script).toContain("verifyAttestation");
     expect(script).toContain("findstr");
     // Layer 2: env var
@@ -230,7 +230,7 @@ describe("install shared behavior", () => {
 
   test("install.sh has three-layer opt-in resolution", () => {
     // Layer 3: config file via grep against the flat JSON boolean
-    expect(sh).toContain("$HOME/.plannotator/config.json");
+    expect(sh).toContain("resolve_config_path");
     expect(sh).toContain('"verifyAttestation"');
     // Layer 2: env var parsing
     expect(sh).toContain("PLANNOTATOR_VERIFY_ATTESTATION");
@@ -244,7 +244,7 @@ describe("install shared behavior", () => {
 
   test("install.ps1 has three-layer opt-in resolution", () => {
     // Layer 3: config file via ConvertFrom-Json
-    expect(ps).toContain("$env:USERPROFILE\\.plannotator\\config.json");
+    expect(ps).toContain("Resolve-ConfigPath");
     expect(ps).toContain("ConvertFrom-Json");
     expect(ps).toContain("$cfg.verifyAttestation");
     // Layer 2: env var

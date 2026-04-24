@@ -9,9 +9,18 @@ REM Tracks whether a version was explicitly set via --version or positional.
 REM Used to reject mixing --version <tag> with a stray positional token.
 set "VERSION_EXPLICIT=0"
 REM Three-layer opt-in for SLSA provenance verification.
-REM Precedence: CLI flag > env var > %USERPROFILE%\.plannotator\config.json > default.
+REM Precedence: CLI flag > env var > config.json > default.
 REM -1 = flag not set (fall through); 0 = disable; 1 = enable.
 set "VERIFY_ATTESTATION_FLAG=-1"
+
+REM Resolve config path respecting XDG and env overrides.
+if defined PLANNOTATOR_CONFIG_DIR (
+    set "CONFIG_PATH=%PLANNOTATOR_CONFIG_DIR%\config.json"
+) else if defined XDG_CONFIG_HOME (
+    set "CONFIG_PATH=%XDG_CONFIG_HOME%\plannotator\config.json"
+) else (
+    set "CONFIG_PATH=%USERPROFILE%\.config\plannotator\config.json"
+)
 
 :parse_args
 if "%~1"=="" goto args_done
@@ -160,8 +169,8 @@ REM provenance support. Precedence: CLI flag > env var > config.json > default.
 set "VERIFY_ATTESTATION=0"
 
 REM Layer 3: config file (lowest precedence of the opt-in sources).
-if exist "%USERPROFILE%\.plannotator\config.json" (
-    findstr /r /c:"\"verifyAttestation\"[ 	]*:[ 	]*true" "%USERPROFILE%\.plannotator\config.json" >nul 2>&1
+if exist "!CONFIG_PATH!" (
+    findstr /r /c:"\"verifyAttestation\"[ 	]*:[ 	]*true" "!CONFIG_PATH!" >nul 2>&1
     if !ERRORLEVEL! equ 0 set "VERIFY_ATTESTATION=1"
 )
 
@@ -227,7 +236,7 @@ if "!VERIFY_ATTESTATION!"=="1" (
         echo   - Pin to !MIN_ATTESTED_VERSION! or later: --version !MIN_ATTESTED_VERSION! >&2
         echo   - Install without provenance verification: --skip-attestation >&2
         echo   - Or unset PLANNOTATOR_VERIFY_ATTESTATION / remove verifyAttestation >&2
-        echo     from %USERPROFILE%\.plannotator\config.json >&2
+        echo     from !CONFIG_PATH! >&2
         exit /b 1
     )
 )

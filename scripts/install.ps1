@@ -18,6 +18,16 @@ if ($VerifyAttestation -and $SkipAttestation) {
 $repo = "backnotprop/plannotator"
 $installDir = "$env:LOCALAPPDATA\plannotator"
 
+function Resolve-ConfigPath {
+    if ($env:PLANNOTATOR_CONFIG_DIR) {
+        return "$env:PLANNOTATOR_CONFIG_DIR\config.json"
+    } elseif ($env:XDG_CONFIG_HOME) {
+        return "$env:XDG_CONFIG_HOME\plannotator\config.json"
+    } else {
+        return "$env:USERPROFILE\.config\plannotator\config.json"
+    }
+}
+
 # First plannotator release that carries SLSA build-provenance attestations.
 # See scripts/install.sh for the full explanation — this constant is bumped
 # once at the first attested release via the release skill.
@@ -93,7 +103,7 @@ Write-Host "Installing plannotator $latestTag..."
 $verifyAttestationResolved = $false
 
 # Layer 3: config file (lowest precedence of the opt-in sources).
-$configPath = "$env:USERPROFILE\.plannotator\config.json"
+$configPath = Resolve-ConfigPath
 if (Test-Path $configPath) {
     try {
         $cfg = Get-Content $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop

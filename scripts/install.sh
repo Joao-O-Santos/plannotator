@@ -9,7 +9,7 @@ INSTALL_DIR="$HOME/.local/bin"
 # `actions/attest-build-provenance` step, so `gh attestation verify` will
 # fail with "no attestations found" for them regardless of authenticity.
 # When provenance verification is enabled (via flag, env var, or
-# ~/.plannotator/config.json), the installer compares the resolved tag
+# ~/.config/plannotator/config.json), the installer compares the resolved tag
 # against this constant and fails fast with a clear message instead of
 # downloading a binary, running SHA256, and then hitting a cryptic gh
 # failure. Bumped once at the first attested release via the release skill.
@@ -22,13 +22,24 @@ version_ge() {
     [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]
 }
 
+# Resolve the plannotator config.json path respecting XDG and env overrides.
+resolve_config_path() {
+    if [ -n "${PLANNOTATOR_CONFIG_DIR:-}" ]; then
+        echo "${PLANNOTATOR_CONFIG_DIR}/config.json"
+    elif [ -n "${XDG_CONFIG_HOME:-}" ]; then
+        echo "${XDG_CONFIG_HOME}/plannotator/config.json"
+    else
+        echo "$HOME/.config/plannotator/config.json"
+    fi
+}
+
 VERSION="latest"
 # Tracks whether a version was explicitly set via --version or positional.
 # Used to reject mixing --version <tag> with a stray positional token,
 # which would otherwise silently overwrite the earlier value and 404.
 VERSION_EXPLICIT=0
 # Three-layer opt-in for SLSA build-provenance verification.
-# Precedence: CLI flag > env var > ~/.plannotator/config.json > default (off).
+# Precedence: CLI flag > env var > ~/.config/plannotator/config.json > default (off).
 # -1 = flag not set yet (fall through to lower layers); 0 = disable; 1 = enable.
 VERIFY_ATTESTATION_FLAG=-1
 
@@ -51,7 +62,7 @@ Options:
 Provenance verification is off by default. Enable it by any of:
   - passing --verify-attestation
   - exporting PLANNOTATOR_VERIFY_ATTESTATION=1
-  - setting { "verifyAttestation": true } in ~/.plannotator/config.json
+  - setting { "verifyAttestation": true } in ~/.config/plannotator/config.json
 
 Examples:
   curl -fsSL https://plannotator.ai/install.sh | bash
@@ -187,14 +198,16 @@ echo "Installing plannotator ${latest_tag}..."
 # provenance support. The three layers (config file, env var, CLI flag) are
 # all cheap to check — no reason to defer this past the arg parse.
 #
-# Precedence: CLI flag > env var > ~/.plannotator/config.json > default (off).
+# Precedence: CLI flag > env var > ~/.config/plannotator/config.json > default (off).
 verify_attestation=0
+
+CONFIG_PATH=$(resolve_config_path)
 
 # Layer 3: config file (lowest precedence of the opt-in sources).
 # Crude grep against a flat boolean — PlannotatorConfig has no nested
 # verifyAttestation, so false positives are not a concern.
-if [ -f "$HOME/.plannotator/config.json" ]; then
-    if grep -q '"verifyAttestation"[[:space:]]*:[[:space:]]*true' "$HOME/.plannotator/config.json" 2>/dev/null; then
+if [ -f "$CONFIG_PATH" ]; then
+    if grep -q '"verifyAttestation"[[:space:]]*:[[:space:]]*true' "$CONFIG_PATH" 2>/dev/null; then
         verify_attestation=1
     fi
 fi
@@ -223,7 +236,7 @@ if [ "$verify_attestation" -eq 1 ]; then
         echo "  - Pin to ${MIN_ATTESTED_VERSION} or later: --version ${MIN_ATTESTED_VERSION}" >&2
         echo "  - Install without provenance verification: --skip-attestation" >&2
         echo "  - Or unset PLANNOTATOR_VERIFY_ATTESTATION / remove verifyAttestation" >&2
-        echo "    from ~/.plannotator/config.json" >&2
+        echo "    from ~/.config/plannotator/config.json" >&2
         exit 1
     fi
 fi
@@ -280,7 +293,7 @@ if [ "$verify_attestation" -eq 1 ]; then
         echo "verifyAttestation is enabled but gh CLI was not found." >&2
         echo "Install https://cli.github.com (and run 'gh auth login')," >&2
         echo "or unset PLANNOTATOR_VERIFY_ATTESTATION / remove verifyAttestation from" >&2
-        echo "~/.plannotator/config.json / pass --skip-attestation." >&2
+        echo "~/.config/plannotator/config.json / pass --skip-attestation." >&2
         rm -f "$tmp_file"
         exit 1
     fi
